@@ -2,9 +2,9 @@ package global
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/lino-network/lino/genesis"
 	"github.com/lino-network/lino/global/model"
 	"github.com/lino-network/lino/types"
+	"github.com/lino-network/lino/genesis"
 )
 
 // GlobalManager encapsulates all basic struct
@@ -23,7 +23,7 @@ func (gm *GlobalManager) InitGlobalManager(ctx sdk.Context, state genesis.Global
 	return gm.globalStorage.InitGlobalState(ctx, state)
 }
 
-func (gm *GlobalManager) RegisterEventAtHeight(ctx sdk.Context, height int64, event types.Event) sdk.Error {
+func (gm *GlobalManager) registerEventAtHeight(ctx sdk.Context, height int64, event types.Event) sdk.Error {
 	eventList, _ := gm.globalStorage.GetHeightEventList(ctx, height)
 	if eventList == nil {
 		eventList = &types.HeightEventList{Events: []types.Event{}}
@@ -35,25 +35,7 @@ func (gm *GlobalManager) RegisterEventAtHeight(ctx sdk.Context, height int64, ev
 	return nil
 }
 
-func (gm *GlobalManager) GetHeightEventListAtHeight(ctx sdk.Context, height int64) *types.HeightEventList {
-	eventList, _ := gm.globalStorage.GetHeightEventList(ctx, height)
-	return eventList
-}
-
-func (gm *GlobalManager) RemoveHeightEventList(ctx sdk.Context, height int64) sdk.Error {
-	return gm.globalStorage.RemoveHeightEventList(ctx, height)
-}
-
-func (gm *GlobalManager) GetTimeEventListAtTime(ctx sdk.Context, unixTime int64) *types.TimeEventList {
-	eventList, _ := gm.globalStorage.GetTimeEventList(ctx, unixTime)
-	return eventList
-}
-
-func (gm *GlobalManager) RemoveTimeEventList(ctx sdk.Context, unixTime int64) sdk.Error {
-	return gm.globalStorage.RemoveTimeEventList(ctx, unixTime)
-}
-
-func (gm *GlobalManager) RegisterEventAtTime(ctx sdk.Context, unixTime int64, event types.Event) sdk.Error {
+func (gm *GlobalManager) registerEventAtTime(ctx sdk.Context, unixTime int64, event types.Event) sdk.Error {
 	eventList, _ := gm.globalStorage.GetTimeEventList(ctx, unixTime)
 	if eventList == nil {
 		eventList = &types.TimeEventList{Events: []types.Event{}}
@@ -64,6 +46,25 @@ func (gm *GlobalManager) RegisterEventAtTime(ctx sdk.Context, unixTime int64, ev
 	}
 	return nil
 }
+
+func (gm *GlobalManager) GetHeightEventListAtHeight(ctx sdk.Context, height int64) (*types.HeightEventList) {
+	eventList, _ := gm.globalStorage.GetHeightEventList(ctx, height)
+	return eventList
+}
+
+func (gm *GlobalManager) RemoveHeightEventList(ctx sdk.Context, height int64) sdk.Error {
+	return gm.globalStorage.RemoveHeightEventList(ctx, height)
+}
+
+func (gm *GlobalManager) GetTimeEventListAtTime(ctx sdk.Context, unixTime int64) (*types.TimeEventList) {
+	eventList, _ := gm.globalStorage.GetTimeEventList(ctx, unixTime)
+	return eventList
+}
+
+func (gm *GlobalManager) RemoveTimeEventList(ctx sdk.Context, unixTime int64) sdk.Error {
+	return gm.globalStorage.RemoveTimeEventList(ctx, unixTime)
+}
+
 
 func (gm *GlobalManager) GetConsumptionFrictionRate(ctx sdk.Context) (sdk.Rat, sdk.Error) {
 	consumptionMeta, err := gm.globalStorage.GetConsumptionMeta(ctx)
@@ -79,7 +80,7 @@ func (gm *GlobalManager) RegisterContentRewardEvent(ctx sdk.Context, event types
 	if err != nil {
 		return err
 	}
-	if err := gm.RegisterEventAtTime(ctx, ctx.BlockHeader().Time+(consumptionMeta.FreezingPeriodHr*3600), event); err != nil {
+	if err := gm.registerEventAtTime(ctx, ctx.BlockHeader().Time+(consumptionMeta.FreezingPeriodHr*3600), event); err != nil {
 		return err
 	}
 	return nil
